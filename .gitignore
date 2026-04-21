@@ -3,9 +3,11 @@
 .vscode
 
 # Node
+./dist
 node_modules
 
 # MacOS
 .DS_Store
 
 .env
+/src/generated/prisma
