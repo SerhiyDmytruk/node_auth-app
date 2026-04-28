@@ -1,5 +1,4 @@
 import React from 'react';
-import './assets/App.css';
 import { Route, Routes } from 'react-router-dom';
 import { Layout } from './modules/Layout';
 import { HomePage } from './modules/HomePage';

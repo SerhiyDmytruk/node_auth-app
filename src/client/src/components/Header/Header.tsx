@@ -1,5 +1,7 @@
 import { NavLink } from 'react-router-dom';
 
+import './Header.css';
+
 import logo from '../../assets/logo.svg';
 
 export const Header = () => {
@@ -12,14 +14,14 @@ export const Header = () => {
 
   return (
     <>
-      <header>
+      <header className="Header">
         <div className="logo">
           <img src={logo} className="App-logo" alt="logo" />
         </div>
-        <nav>
-          <ul>
+        <nav className="navigation">
+          <ul className="menu">
             {NAV_LINKS.map(({ to, label, end }) => (
-              <li key={to}>
+              <li key={to} className="link">
                 <NavLink to={to} end={end}>
                   {label}
                 </NavLink>

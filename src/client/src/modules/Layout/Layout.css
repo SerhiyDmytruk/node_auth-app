@@ -11,3 +11,31 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+* {
+  box-sizing: border-box;
+}
+
+.App {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  grid-template-areas:
+    'header header header'
+    'main main main';
+  gap: 20px;
+}
+ 
+.Header {
+  grid-area: header;
+}
+
+main {
+  grid-area: main;
+}
+
+main {
+  display: flex;
+  align-items: center;
+  padding: 0 15%;
+}
