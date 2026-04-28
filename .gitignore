@@ -3,7 +3,7 @@
 .vscode
 
 # Node
-./dist
+dist
 node_modules
 
 # MacOS
