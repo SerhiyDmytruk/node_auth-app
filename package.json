@@ -7,6 +7,7 @@
     "init": "mate-scripts init",
     "build": "tsc",
     "start": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit --watch",
     "lint": "npm run format && mate-scripts lint",
     "format": "prettier --ignore-path .prettierignore --write './src/**/*.{js,ts}'",
     "test:only": "mate-scripts test",
@@ -20,13 +21,19 @@
     "db:reset": "docker compose down -v",
     "prisma:pull": "prisma db pull",
     "prisma:add:db": "npx prisma dev",
-    "prisma:migrate:db": "prisma migrate dev"
+    "prisma:migrate:db": "prisma migrate dev",
+    "client:dev": "npm --prefix src/client run dev",
+    "client:build": "npm --prefix src/client run build",
+    "client:test": "npm --prefix src/client run test"
   },
   "author": "Mate academy",
   "license": "GPL-3.0",
   "devDependencies": {
     "@mate-academy/eslint-config": "latest",
     "@mate-academy/scripts": "^0.9.9",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
     "eslint": "^8.57.0",
     "eslint-plugin-jest": "^28.6.0",
@@ -37,7 +44,7 @@
     "typescript": "^6.0.3"
   },
   "mateAcademy": {
-    "projectType": "javascript"
+    "projectType": "typescript"
   },
   "dependencies": {
     "@prisma/client": "^7.7.0",
@@ -45,13 +52,12 @@
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.5",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
     "prisma": "^6.19.3",
-    "react-redux": "^9.2.0",
-    "react-router-dom": "^7.14.2",
     "uuid": "^14.0.0"
   }
 }
