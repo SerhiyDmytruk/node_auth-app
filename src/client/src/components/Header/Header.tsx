@@ -8,8 +8,7 @@ export const Header = () => {
   const NAV_LINKS = [
     { to: '/', label: 'Home', end: true },
     { to: '/profile', label: 'Profile', end: false },
-    { to: '/sign-in', label: 'Sign In', end: false },
-    { to: '/log-in', label: 'Log in', end: false },
+    { to: '/login', label: 'Log in | Sign up', end: false },
   ];
 
   return (
