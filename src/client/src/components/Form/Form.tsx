@@ -2,13 +2,113 @@ import { useState } from 'react';
 
 import './Form.css';
 
+type LoginMode = 'login' | 'registration';
+type FormStatus = {
+  type: 'error' | 'success';
+  message: string;
+};
+
+const getFieldValue = (formData: FormData, fieldName: string) => {
+  return String(formData.get(fieldName) || '').trim();
+};
+
 export const Form = () => {
-  const [formType, setFormType] = useState('login');
+  const [formType, setFormType] = useState<LoginMode>('login');
+  const [status, setStatus] = useState<FormStatus | null>(null);
   const isLoginMode = formType === 'login';
+
+  const clearCustomValidity = (form: HTMLFormElement) => {
+    const inputs = form.querySelectorAll('input');
+
+    inputs.forEach((input) => {
+      input.setCustomValidity('');
+    });
+  };
+
+  const loginValidate = (form: HTMLFormElement) => {
+    const formData = new FormData(form);
+    const email = getFieldValue(formData, 'email');
+    const password = getFieldValue(formData, 'password');
+
+    if (!email || !password) {
+      setStatus({
+        type: 'error',
+        message: 'Email and password are required.',
+      });
+
+      return false;
+    }
+
+    return true;
+  };
+
+  const registrationValidate = (form: HTMLFormElement) => {
+    const formData = new FormData(form);
+    const name = getFieldValue(formData, 'name');
+    const password = getFieldValue(formData, 'password');
+    const passwordConfirm = getFieldValue(formData, 'confirmPassword');
+
+    if (name.length < 3) {
+      setStatus({
+        type: 'error',
+        message: 'Name must contain at least 3 non-space characters.',
+      });
+
+      return false;
+    }
+
+    if (password !== passwordConfirm) {
+      const confirmPasswordInput = form.elements.namedItem(
+        'confirmPassword',
+      ) as HTMLInputElement | null;
+
+      confirmPasswordInput?.setCustomValidity('Passwords must match.');
+      confirmPasswordInput?.reportValidity();
+      confirmPasswordInput?.focus();
+
+      setStatus({
+        type: 'error',
+        message: 'Passwords must match.',
+      });
+
+      return false;
+    }
+
+    return true;
+  };
+
+  const formSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+
+    clearCustomValidity(form);
+    setStatus(null);
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+
+      return;
+    }
+
+    const isValid = isLoginMode
+      ? loginValidate(form)
+      : registrationValidate(form);
+
+    if (!isValid) {
+      return;
+    }
+
+    setStatus({
+      type: 'success',
+      message: isLoginMode
+        ? 'Login form is valid. Connect the login request next.'
+        : 'Registration form is valid. Connect POST /registration next.',
+    });
+  };
 
   return (
     <section className="auth-form-section">
-      <form className="auth-form" action="" method="post">
+      <form className="auth-form" noValidate onSubmit={formSubmit}>
         <p className="auth-form__eyebrow">Account</p>
         <h1 className="auth-form__title">
           {isLoginMode ? 'Log in' : 'Create account'}
@@ -28,6 +128,12 @@ export const Form = () => {
                 name="name"
                 placeholder="John Doe"
                 autoComplete="name"
+                minLength={3}
+                onInput={(event) => {
+                  event.currentTarget.setCustomValidity('');
+                  setStatus(null);
+                }}
+                required
               />
             </label>
           )}
@@ -39,6 +145,8 @@ export const Form = () => {
               name="email"
               placeholder="name@example.com"
               autoComplete="email"
+              onInput={() => setStatus(null)}
+              required
             />
           </label>
 
@@ -49,6 +157,9 @@ export const Form = () => {
               name="password"
               placeholder="Enter your password"
               autoComplete={isLoginMode ? 'current-password' : 'new-password'}
+              minLength={8}
+              onInput={() => setStatus(null)}
+              required
             />
           </label>
 
@@ -57,13 +168,25 @@ export const Form = () => {
               <span>Confirm password</span>
               <input
                 type="password"
-                name="password-confirm"
+                name="confirmPassword"
                 placeholder="Repeat your password"
                 autoComplete="new-password"
+                minLength={8}
+                onInput={(event) => {
+                  event.currentTarget.setCustomValidity('');
+                  setStatus(null);
+                }}
+                required
               />
             </label>
           )}
         </div>
+
+        {status && (
+          <p className={`auth-form__status auth-form__status--${status.type}`}>
+            {status.message}
+          </p>
+        )}
 
         <button className="auth-form__submit" type="submit">
           {isLoginMode ? 'Log in' : 'Sign up'}
@@ -74,6 +197,7 @@ export const Form = () => {
         className="auth-form__toggle"
         type="button"
         onClick={() => {
+          setStatus(null);
           setFormType(isLoginMode ? 'registration' : 'login');
         }}
       >

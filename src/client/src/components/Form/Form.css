@@ -101,6 +101,20 @@
   box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28);
 }
 
+.auth-form__status {
+  margin: 18px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.auth-form__status--error {
+  color: #b42318;
+}
+
+.auth-form__status--success {
+  color: #0f7b6c;
+}
+
 .auth-form__submit:hover {
   filter: brightness(1.03);
   transform: translateY(-1px);

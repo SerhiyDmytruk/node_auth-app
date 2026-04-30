@@ -4,7 +4,10 @@ import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import { authRouter } from './routes/route.auth.js';
+import { authRouter } from './routes/authRoute.js';
+import { loginRouter } from './routes/loginRoute.js';
+import { logoutRouter } from './routes/logoutRoute.js';
+import { meRouter } from './routes/meRoute.js';
 
 export const app = express();
 
@@ -19,3 +22,6 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use(authRouter);
+app.use(loginRouter);
+app.use(logoutRouter);
+app.use(meRouter);

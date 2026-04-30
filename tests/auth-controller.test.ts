@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { authController } from '../src/controllers/route.controller.js';
+import { authController } from '../src/controllers/authController.js';
 
 describe('authController', () => {
   it('sends greeting on registration', () => {
