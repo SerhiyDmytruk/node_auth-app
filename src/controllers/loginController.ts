@@ -7,11 +7,7 @@ type LoginRequestBody = {
 
 const emailPattern = /^[\w.+-]+@([\w-]+\.){1,3}[\w-]{2,}$/;
 
-function validateEmail(value: unknown): string | null {
-  if (typeof value !== 'string') {
-    return 'Email must be a string';
-  }
-
+function validateEmail(value: string): string | null {
   const trimmedEmail = value.trim();
 
   if (!trimmedEmail) {
@@ -25,11 +21,7 @@ function validateEmail(value: unknown): string | null {
   return null;
 }
 
-function validatePassword(value: unknown): string | null {
-  if (typeof value !== 'string') {
-    return 'Password must be a string';
-  }
-
+function validatePassword(value: string): string | null {
   if (!value.trim()) {
     return 'Password is required';
   }
@@ -43,6 +35,19 @@ function validatePassword(value: unknown): string | null {
 
 const login = (req: Request, res: Response): void => {
   const { email, password } = (req.body ?? {}) as LoginRequestBody;
+
+  if (typeof email !== 'string') {
+    res.status(400).json({ message: 'Email must be a string' });
+
+    return;
+  }
+
+  if (typeof password !== 'string') {
+    res.status(400).json({ message: 'Password must be a string' });
+
+    return;
+  }
+
   const emailError = validateEmail(email);
 
   if (emailError) {
