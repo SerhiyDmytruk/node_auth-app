@@ -19,5 +19,25 @@ model User {
   passwordHash String
   createdAt DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  isActivated Boolean  @default(true)
+  isActivated Boolean  @default(false)
+
+  tokens Token[]
+}
+
+enum TokenType {
+  EMAIL_ACTIVATION
+  PASSWORD_RESET
+  EMAIL_CHANGE
+  REFRESH_TOKEN
+}
+
+model Token {
+  id String @id @default(uuid())
+  userId String
+  type TokenType
+  token String @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }

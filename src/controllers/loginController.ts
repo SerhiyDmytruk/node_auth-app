@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
+import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { prisma } from '../lib/prisma.js';
+import { TokenType } from '../generated/prisma/enums.js';
 
 type LoginRequestBody = {
   email?: unknown;
@@ -8,6 +10,7 @@ type LoginRequestBody = {
 };
 
 const emailPattern = /^[\w.+-]+@([\w-]+\.){1,3}[\w-]{2,}$/;
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function validateEmail(value: string): string | null {
   const trimmedEmail = value.trim();
@@ -88,10 +91,38 @@ const login = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  res.status(200).json({
-    message: 'Login payload is valid.',
+  if (!existingUser.isActivated) {
+    res.status(403).json({ message: 'Please activate your email first' });
+
+    return;
+  }
+
+  const refreshToken = randomUUID();
+  const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
+
+  await prisma.token.create({
     data: {
+      userId: existingUser.id,
+      type: TokenType.REFRESH_TOKEN,
+      token: refreshToken,
+      expiresAt,
+    },
+  });
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    expires: expiresAt,
+  });
+
+  res.status(200).json({
+    message: 'Login successful.',
+    data: {
+      id: existingUser.id,
       email: existingUser.email,
+      name: existingUser.name,
+      isActivated: existingUser.isActivated,
     },
   });
 };
