@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import { prisma } from '../lib/prisma.js';
 
 type LoginRequestBody = {
   email?: unknown;
@@ -33,7 +35,7 @@ function validatePassword(value: string): string | null {
   return null;
 }
 
-const login = (req: Request, res: Response): void => {
+const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = (req.body ?? {}) as LoginRequestBody;
 
   if (typeof email !== 'string') {
@@ -66,12 +68,30 @@ const login = (req: Request, res: Response): void => {
 
   const trimmedEmail = email.trim();
 
-  // start search in the db
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email: trimmedEmail,
+    },
+  });
+
+  if (!existingUser) {
+    res.status(401).json({ message: 'Invalid email or password' });
+
+    return;
+  }
+
+  const isPassEqual = await bcrypt.compare(password, existingUser.passwordHash);
+
+  if (!isPassEqual) {
+    res.status(401).json({ message: 'Invalid email or password' });
+
+    return;
+  }
 
   res.status(200).json({
     message: 'Login payload is valid.',
     data: {
-      email: trimmedEmail,
+      email: existingUser.email,
     },
   });
 };

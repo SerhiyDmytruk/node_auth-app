@@ -22,6 +22,7 @@
     "db:reset": "docker compose down -v",
     "prisma:pull": "prisma db pull",
     "prisma:add:db": "npx prisma dev",
+    "prisma:generate:db": "npx prisma generate",
     "prisma:migrate:db": "prisma migrate dev",
     "client:dev": "npm --prefix src/client run dev",
     "client:build": "npm --prefix src/client run build",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@mate-academy/eslint-config": "latest",
     "@mate-academy/scripts": "^0.9.9",
+    "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -48,6 +50,7 @@
     "projectType": "typescript"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.7.0",
     "@reduxjs/toolkit": "^2.11.2",
     "bcrypt": "^6.0.0",
@@ -58,7 +61,7 @@
     "nodemailer": "^8.0.5",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
-    "prisma": "^6.19.3",
+    "prisma": "7.7.0",
     "uuid": "^14.0.0"
   }
 }

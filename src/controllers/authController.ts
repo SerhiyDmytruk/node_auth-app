@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import { prisma } from '../lib/prisma.js';
 
 type AuthRequestBody = {
   name?: unknown;
@@ -47,7 +49,7 @@ function validateName(value: string): string | null {
   return null;
 }
 
-const registration = (req: Request, res: Response): void => {
+const registration = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password, confirmPassword } = (req.body ??
     {}) as AuthRequestBody;
 
@@ -115,13 +117,34 @@ const registration = (req: Request, res: Response): void => {
     return;
   }
 
-  // start search in the db
-
-  res.status(200).json({
-    message: 'Registration data is valid.',
-    data: {
+  const existingUser = await prisma.user.findUnique({
+    where: {
       email: trimmedEmail,
+    },
+  });
+
+  if (existingUser) {
+    res.status(409).json({ message: 'User with this email already exists' });
+
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await prisma.user.create({
+    data: {
       name: trimmedName,
+      email: trimmedEmail,
+      passwordHash,
+    },
+  });
+
+  res.status(201).json({
+    message: 'User registered successfully.',
+    data: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      isActivated: user.isActivated,
     },
   });
 };
