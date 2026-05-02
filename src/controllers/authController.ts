@@ -48,8 +48,8 @@ function validateName(value: string): string | null {
 }
 
 const registration = (req: Request, res: Response): void => {
-  const { name, email, password, confirmPassword } =
-    (req.body ?? {}) as AuthRequestBody;
+  const { name, email, password, confirmPassword } = (req.body ??
+    {}) as AuthRequestBody;
 
   if (typeof email !== 'string') {
     res.status(400).json({ message: 'Email must be a string' });
