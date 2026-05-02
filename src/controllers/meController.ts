@@ -1,21 +1,50 @@
 import { Request, Response } from 'express';
+import { TokenType } from '../generated/prisma/enums.js';
+import { prisma } from '../lib/prisma.js';
 
-const me = (req: Request, res: Response): void => {
-  const authorization = req.headers.authorization;
+const me = async (req: Request, res: Response): Promise<void> => {
   const refreshToken = req.cookies?.refreshToken;
 
-  if (!authorization && typeof refreshToken !== 'string') {
+  if (typeof refreshToken !== 'string' || !refreshToken.trim()) {
     res.status(401).json({ message: 'Authentication is required' });
 
     return;
   }
 
-  // start search in the db
+  const existingToken = await prisma.token.findFirst({
+    where: {
+      token: refreshToken,
+      type: TokenType.REFRESH_TOKEN,
+    },
+  });
+
+  if (!existingToken) {
+    res.clearCookie('refreshToken');
+    res.status(401).json({ message: 'Authentication is required' });
+
+    return;
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: existingToken.userId,
+    },
+  });
+
+  if (!existingUser) {
+    res.clearCookie('refreshToken');
+    res.status(401).json({ message: 'Authentication is required' });
+
+    return;
+  }
 
   res.status(200).json({
     message: 'Authentication context is present.',
     data: {
-      authenticated: true,
+      id: existingUser.id,
+      name: existingUser.name,
+      email: existingUser.email,
+      isActivated: existingUser.isActivated,
     },
   });
 };
