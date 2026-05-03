@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 import { client } from '../../utils/client';
 import { Form } from './Form';
@@ -15,10 +16,18 @@ describe('Form', () => {
     vi.clearAllMocks();
   });
 
+  const renderForm = () => {
+    render(
+      <MemoryRouter>
+        <Form />
+      </MemoryRouter>,
+    );
+  };
+
   test('shows a validation error when registration passwords do not match', async () => {
     const user = userEvent.setup();
 
-    render(<Form />);
+    renderForm();
 
     await user.click(
       screen.getByRole('button', { name: /don't have an account\? sign up/i }),
@@ -45,7 +54,7 @@ describe('Form', () => {
       },
     });
 
-    render(<Form />);
+    renderForm();
 
     await user.click(
       screen.getByRole('button', { name: /don't have an account\? sign up/i }),
