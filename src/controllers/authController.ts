@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcrypt';
 import { TokenType } from '../generated/prisma/enums.js';
 import { prisma } from '../lib/prisma.js';
+import { sendActivationEmail } from '../services/mailService.js';
 
 type AuthRequestBody = {
   name?: unknown;
@@ -152,6 +153,7 @@ const registration = async (req: Request, res: Response): Promise<void> => {
       expiresAt,
     },
   });
+  await sendActivationEmail(user.email, activationToken);
 
   res.status(201).json({
     message: 'User registered successfully.',

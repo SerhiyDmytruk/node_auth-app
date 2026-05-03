@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { TokenType } from '../src/generated/prisma/enums.js';
 import { prisma } from '../src/lib/prisma.js';
 import { authController } from '../src/controllers/authController.js';
+import { sendActivationEmail } from '../src/services/mailService.js';
 
 vi.mock('../src/lib/prisma.js', () => ({
   prisma: {
@@ -23,6 +24,10 @@ vi.mock('bcrypt', () => ({
   default: {
     hash: vi.fn(),
   },
+}));
+
+vi.mock('../src/services/mailService.js', () => ({
+  sendActivationEmail: vi.fn(),
 }));
 
 const createResponse = () => {
@@ -161,6 +166,10 @@ describe('authController', () => {
         type: TokenType.EMAIL_ACTIVATION,
       }),
     });
+    expect(sendActivationEmail).toHaveBeenCalledWith(
+      'test@example.com',
+      expect.any(String),
+    );
     expect(response.status).toHaveBeenCalledWith(201);
     expect(response.json).toHaveBeenCalledWith({
       message: 'User registered successfully.',

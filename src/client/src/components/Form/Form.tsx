@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import './Form.css';
+import { AuthUser, AuthResponse, RegistrationResponse } from '../../types/auth';
 import { client } from '../../utils/client';
 
 type LoginMode = 'login' | 'registration';
@@ -9,9 +10,9 @@ type FormStatus = {
   type: 'error' | 'success';
   message: string;
 };
-
-type AuthSuccessResponse = {
-  message: string;
+type Props = {
+  initialMode?: LoginMode;
+  onLoginSuccess?: (user: AuthUser) => void;
 };
 
 const getFieldValue = (form: HTMLFormElement, fieldName: string) => {
@@ -19,8 +20,8 @@ const getFieldValue = (form: HTMLFormElement, fieldName: string) => {
   return String(formData.get(fieldName) || '').trim();
 };
 
-export const Form = () => {
-  const [formType, setFormType] = useState<LoginMode>('login');
+export const Form = ({ initialMode = 'login', onLoginSuccess }: Props) => {
+  const [formType, setFormType] = useState<LoginMode>(initialMode);
   const [status, setStatus] = useState<FormStatus | null>(null);
   const isLoginMode = formType === 'login';
 
@@ -104,21 +105,34 @@ export const Form = () => {
     }
 
     try {
-      const response = isLoginMode
-        ? await client.post<AuthSuccessResponse>('/login', {
-            email: getFieldValue(form, 'email'),
-            password: getFieldValue(form, 'password'),
-          })
-        : await client.post<AuthSuccessResponse>('/registration', {
-            name: getFieldValue(form, 'name'),
-            email: getFieldValue(form, 'email'),
-            password: getFieldValue(form, 'password'),
-            confirmPassword: getFieldValue(form, 'confirmPassword'),
-          });
+      if (isLoginMode) {
+        const response = await client.post<AuthResponse>('/login', {
+          email: getFieldValue(form, 'email'),
+          password: getFieldValue(form, 'password'),
+        });
+
+        setStatus({
+          type: 'success',
+          message: response.message,
+        });
+        onLoginSuccess?.(response.data);
+
+        return;
+      }
+
+      const response = await client.post<RegistrationResponse>(
+        '/registration',
+        {
+          name: getFieldValue(form, 'name'),
+          email: getFieldValue(form, 'email'),
+          password: getFieldValue(form, 'password'),
+          confirmPassword: getFieldValue(form, 'confirmPassword'),
+        },
+      );
 
       setStatus({
         type: 'success',
-        message: response.message,
+        message: `${response.message} Open ${import.meta.env.VITE_API_URL}/activate/${response.data.activationToken} to activate your account.`,
       });
     } catch (error) {
       setStatus({

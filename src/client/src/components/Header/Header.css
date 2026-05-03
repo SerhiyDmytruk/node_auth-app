@@ -40,6 +40,19 @@
       color: #61dafb;
     }
   }
+
+  .link__button {
+    border: none;
+    background: transparent;
+    padding: 0;
+    font: inherit;
+    color: #000;
+    cursor: pointer;
+
+    &:hover {
+      color: #61dafb;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

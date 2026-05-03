@@ -1,20 +1,88 @@
-import { Route, Routes } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { Loader } from './components/Loader';
 import { Layout } from './modules/Layout';
 import { HomePage } from './modules/HomePage';
 import { NotFoundPage } from './modules/NotFoundPage';
 import { ProfilePage } from './modules/ProfilePage';
 import { AccountPage } from './modules/AccountPage';
+import { AuthResponse, AuthUser } from './types/auth';
+import { client } from './utils/client';
 
 function App() {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const response = await client.get<AuthResponse>('/me');
+        setAuthUser(response.data);
+      } catch {
+        setAuthUser(null);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
+    loadCurrentUser();
+  }, []);
+
+  if (isAuthLoading) {
+    return <Loader />;
+  }
+
   return (
     <div className="App">
       <Routes>
-        <Route element={<Layout />}>
+        <Route
+          element={
+            <Layout
+              authUser={authUser}
+              onLogoutSuccess={() => {
+                setAuthUser(null);
+              }}
+            />
+          }
+        >
           <Route path="/" element={<HomePage />} />
           <Route path="home" element={<HomePage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="login" element={<AccountPage />} />
-          <Route path="registration" element={<AccountPage />} />
+          <Route
+            path="profile"
+            element={
+              authUser ? <ProfilePage user={authUser} /> : <Navigate to="/login" replace />
+            }
+          />
+          <Route
+            path="login"
+            element={
+              authUser ? (
+                <Navigate to="/profile" replace />
+              ) : (
+                <AccountPage
+                  initialMode="login"
+                  onLoginSuccess={(user) => {
+                    setAuthUser(user);
+                  }}
+                />
+              )
+            }
+          />
+          <Route
+            path="registration"
+            element={
+              authUser ? (
+                <Navigate to="/profile" replace />
+              ) : (
+                <AccountPage
+                  initialMode="registration"
+                  onLoginSuccess={(user) => {
+                    setAuthUser(user);
+                  }}
+                />
+              )
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

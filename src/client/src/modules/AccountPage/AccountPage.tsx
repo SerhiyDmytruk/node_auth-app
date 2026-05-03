@@ -1,9 +1,15 @@
 import { Form } from '../../components/Form/Form';
+import { AuthUser } from '../../types/auth';
 
-export const AccountPage = () => {
+type Props = {
+  initialMode: 'login' | 'registration';
+  onLoginSuccess: (user: AuthUser) => void;
+};
+
+export const AccountPage = ({ initialMode, onLoginSuccess }: Props) => {
   return (
     <>
-      <Form />
+      <Form initialMode={initialMode} onLoginSuccess={onLoginSuccess} />
     </>
   );
 };

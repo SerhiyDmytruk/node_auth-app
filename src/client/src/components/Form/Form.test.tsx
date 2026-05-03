@@ -36,6 +36,13 @@ describe('Form', () => {
     const user = userEvent.setup();
     vi.mocked(client.post).mockResolvedValue({
       message: 'User registered successfully.',
+      data: {
+        id: 'user-1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        isActivated: false,
+        activationToken: 'activation-token',
+      },
     });
 
     render(<Form />);
@@ -52,5 +59,6 @@ describe('Form', () => {
     expect(
       screen.getByText(/user registered successfully\./i),
     ).toBeInTheDocument();
+    expect(screen.getByText(/activate\/activation-token/i)).toBeInTheDocument();
   });
 });
