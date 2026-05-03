@@ -50,3 +50,33 @@ export const sendActivationEmail = async (
     html: `<p>Activate your account:</p><p><a href="${activationUrl}">${activationUrl}</a></p>`,
   });
 };
+
+export const sendEmailChangeNotification = async (
+  oldEmail: string,
+  newEmail: string,
+): Promise<void> => {
+  if (!canUseSmtp()) {
+    // eslint-disable-next-line no-console
+    console.log(`Email changed from ${oldEmail} to ${newEmail}`);
+
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to: oldEmail,
+    subject: 'Your email was changed',
+    text: `Your account email has been changed to ${newEmail}.`,
+    html: `<p>Your account email has been changed to <strong>${newEmail}</strong>.</p>`,
+  });
+};

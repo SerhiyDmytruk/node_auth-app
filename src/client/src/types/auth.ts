@@ -16,3 +16,7 @@ export type RegistrationResponse = {
     activationToken: string;
   };
 };
+
+export type MessageResponse = {
+  message: string;
+};

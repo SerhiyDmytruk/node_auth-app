@@ -52,7 +52,12 @@ function App() {
             path="profile"
             element={
               authUser ? (
-                <ProfilePage user={authUser} />
+                <ProfilePage
+                  user={authUser}
+                  onProfileUpdate={(user) => {
+                    setAuthUser(user);
+                  }}
+                />
               ) : (
                 <Navigate to="/login" replace />
               )
