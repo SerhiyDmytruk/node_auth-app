@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { client } from '../../utils/client';
 import { useEffect, useState } from 'react';
+import { AuthResponse } from '../../types/auth';
 
 type FormStatus = {
   type: 'error' | 'success';
@@ -11,9 +12,10 @@ export const ActivationPage = () => {
   const [status, setStatus] = useState<FormStatus | null>(null);
   const { token } = useParams();
   const navigate = useNavigate();
-  let timerId;
 
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
     const loadCurrentUser = async () => {
       try {
         if (!token) {
@@ -26,7 +28,7 @@ export const ActivationPage = () => {
           return;
         }
 
-        const response = await client.get(`/activate/${token}`);
+        const response = await client.get<AuthResponse>(`/activate/${token}`);
 
         setStatus({
           type: 'success',
@@ -48,7 +50,12 @@ export const ActivationPage = () => {
     };
 
     loadCurrentUser();
-    clearTimeout(timerId);
+
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
   }, [token, navigate]);
 
   return (

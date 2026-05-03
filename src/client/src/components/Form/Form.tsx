@@ -132,7 +132,7 @@ export const Form = ({ initialMode = 'login', onLoginSuccess }: Props) => {
 
       setStatus({
         type: 'success',
-        message: `${response.message} Open ${import.meta.env.VITE_API_URL}/activate/${response.data.activationToken} to activate your account.`,
+        message: `${response.message} Open ${import.meta.env.VITE_CLIENT_URL}/activate/${response.data.activationToken} to activate your account.`,
       });
     } catch (error) {
       setStatus({
