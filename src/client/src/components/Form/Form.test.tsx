@@ -1,8 +1,20 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
+import { client } from '../../utils/client';
 import { Form } from './Form';
 
+vi.mock('../../utils/client', () => ({
+  client: {
+    post: vi.fn(),
+  },
+}));
+
 describe('Form', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   test('shows a validation error when registration passwords do not match', async () => {
     const user = userEvent.setup();
 
@@ -22,6 +34,9 @@ describe('Form', () => {
 
   test('shows the next step when registration validation passes', async () => {
     const user = userEvent.setup();
+    vi.mocked(client.post).mockResolvedValue({
+      message: 'User registered successfully.',
+    });
 
     render(<Form />);
 
@@ -35,7 +50,7 @@ describe('Form', () => {
     await user.click(screen.getByRole('button', { name: /^sign up$/i }));
 
     expect(
-      screen.getByText(/registration form is valid\. connect post \/registration next\./i),
+      screen.getByText(/user registered successfully\./i),
     ).toBeInTheDocument();
   });
 });

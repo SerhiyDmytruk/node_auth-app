@@ -1,14 +1,21 @@
 import { useState } from 'react';
 
 import './Form.css';
+import { client } from '../../utils/client';
 
 type LoginMode = 'login' | 'registration';
+
 type FormStatus = {
   type: 'error' | 'success';
   message: string;
 };
 
-const getFieldValue = (formData: FormData, fieldName: string) => {
+type AuthSuccessResponse = {
+  message: string;
+};
+
+const getFieldValue = (form: HTMLFormElement, fieldName: string) => {
+  const formData = new FormData(form);
   return String(formData.get(fieldName) || '').trim();
 };
 
@@ -26,9 +33,8 @@ export const Form = () => {
   };
 
   const loginValidate = (form: HTMLFormElement) => {
-    const formData = new FormData(form);
-    const email = getFieldValue(formData, 'email');
-    const password = getFieldValue(formData, 'password');
+    const email = getFieldValue(form, 'email');
+    const password = getFieldValue(form, 'password');
 
     if (!email || !password) {
       setStatus({
@@ -43,10 +49,9 @@ export const Form = () => {
   };
 
   const registrationValidate = (form: HTMLFormElement) => {
-    const formData = new FormData(form);
-    const name = getFieldValue(formData, 'name');
-    const password = getFieldValue(formData, 'password');
-    const passwordConfirm = getFieldValue(formData, 'confirmPassword');
+    const name = getFieldValue(form, 'name');
+    const password = getFieldValue(form, 'password');
+    const passwordConfirm = getFieldValue(form, 'confirmPassword');
 
     if (name.length < 3) {
       setStatus({
@@ -77,7 +82,7 @@ export const Form = () => {
     return true;
   };
 
-  const formSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+  const formSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
 
@@ -98,12 +103,29 @@ export const Form = () => {
       return;
     }
 
-    setStatus({
-      type: 'success',
-      message: isLoginMode
-        ? 'Login form is valid. Connect the login request next.'
-        : 'Registration form is valid. Connect POST /registration next.',
-    });
+    try {
+      const response = isLoginMode
+        ? await client.post<AuthSuccessResponse>('/login', {
+            email: getFieldValue(form, 'email'),
+            password: getFieldValue(form, 'password'),
+          })
+        : await client.post<AuthSuccessResponse>('/registration', {
+            name: getFieldValue(form, 'name'),
+            email: getFieldValue(form, 'email'),
+            password: getFieldValue(form, 'password'),
+            confirmPassword: getFieldValue(form, 'confirmPassword'),
+          });
+
+      setStatus({
+        type: 'success',
+        message: response.message,
+      });
+    } catch (error) {
+      setStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Request failed',
+      });
+    }
   };
 
   return (
