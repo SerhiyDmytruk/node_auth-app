@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcrypt';
+import { TokenType } from '../generated/prisma/enums.js';
 import { prisma } from '../lib/prisma.js';
 
 type AuthRequestBody = {
@@ -10,6 +12,7 @@ type AuthRequestBody = {
 };
 
 const emailPattern = /^[\w.+-]+@([\w-]+\.){1,3}[\w-]{2,}$/;
+const ACTIVATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 function validateEmail(value: string): string | null {
   const trimmedEmail = value.trim();
@@ -138,8 +141,107 @@ const registration = async (req: Request, res: Response): Promise<void> => {
     },
   });
 
+  const activationToken = randomUUID();
+  const expiresAt = new Date(Date.now() + ACTIVATION_TOKEN_TTL_MS);
+
+  await prisma.token.create({
+    data: {
+      userId: user.id,
+      type: TokenType.EMAIL_ACTIVATION,
+      token: activationToken,
+      expiresAt,
+    },
+  });
+
   res.status(201).json({
     message: 'User registered successfully.',
+    data: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      isActivated: user.isActivated,
+      activationToken,
+    },
+  });
+};
+
+const activate = async (req: Request, res: Response): Promise<void> => {
+  const rawActivationToken = req.params.token;
+
+  if (typeof rawActivationToken !== 'string') {
+    res.status(400).json({ message: 'Activation token is required' });
+
+    return;
+  }
+
+  const activationToken = rawActivationToken.trim();
+
+  if (!activationToken) {
+    res.status(400).json({ message: 'Activation token is required' });
+
+    return;
+  }
+
+  const existingToken = await prisma.token.findFirst({
+    where: {
+      token: activationToken,
+      type: TokenType.EMAIL_ACTIVATION,
+    },
+  });
+
+  if (!existingToken) {
+    res.status(400).json({ message: 'Activation token is invalid or expired' });
+
+    return;
+  }
+
+  if (existingToken.expiresAt <= new Date()) {
+    await prisma.token.delete({
+      where: {
+        id: existingToken.id,
+      },
+    });
+
+    res.status(400).json({ message: 'Activation token is invalid or expired' });
+
+    return;
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: existingToken.userId,
+    },
+  });
+
+  if (!existingUser) {
+    await prisma.token.delete({
+      where: {
+        id: existingToken.id,
+      },
+    });
+
+    res.status(404).json({ message: 'User not found' });
+
+    return;
+  }
+
+  const user = await prisma.user.update({
+    where: {
+      id: existingUser.id,
+    },
+    data: {
+      isActivated: true,
+    },
+  });
+
+  await prisma.token.delete({
+    where: {
+      id: existingToken.id,
+    },
+  });
+
+  res.status(200).json({
+    message: 'Account activated successfully.',
     data: {
       id: user.id,
       email: user.email,
@@ -150,5 +252,6 @@ const registration = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const authController = {
+  activate,
   registration,
 };
