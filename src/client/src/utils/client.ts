@@ -23,7 +23,9 @@ async function request<T>(
   const response = await fetch(BE_URL + url, options);
 
   if (!response.ok) {
-    const errorData = (await response.json().catch(() => null)) as ErrorResponse | null;
+    const errorData = (await response
+      .json()
+      .catch(() => null)) as ErrorResponse | null;
     const message = errorData?.message || 'Request failed';
 
     throw new Error(message);

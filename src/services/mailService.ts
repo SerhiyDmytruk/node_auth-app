@@ -1,10 +1,10 @@
 import nodemailer from 'nodemailer';
 
-const DEFAULT_BE_URL = 'http://localhost:5000';
+const CLIENT_URL = 'http://localhost:3000';
 const PLACEHOLDER_SMTP_PASSWORD = 'your_application_password_from_gmail';
 
 const buildActivationUrl = (activationToken: string) => {
-  const baseUrl = (process.env.BE_URL || DEFAULT_BE_URL).replace(/\/+$/, '');
+  const baseUrl = (process.env.CLIENT_URL || CLIENT_URL).replace(/\/+$/, '');
 
   return `${baseUrl}/activate/${activationToken}`;
 };

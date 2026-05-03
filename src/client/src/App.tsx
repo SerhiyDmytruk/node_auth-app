@@ -8,6 +8,7 @@ import { ProfilePage } from './modules/ProfilePage';
 import { AccountPage } from './modules/AccountPage';
 import { AuthResponse, AuthUser } from './types/auth';
 import { client } from './utils/client';
+import { ActivationPage } from './modules/ActivationPage';
 
 function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -50,14 +51,18 @@ function App() {
           <Route
             path="profile"
             element={
-              authUser ? <ProfilePage user={authUser} /> : <Navigate to="/login" replace />
+              authUser ? (
+                <ProfilePage user={authUser} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
             }
           />
           <Route
             path="login"
             element={
               authUser ? (
-                <Navigate to="/profile" replace />
+                <Navigate to="profile" replace />
               ) : (
                 <AccountPage
                   initialMode="login"
@@ -72,7 +77,7 @@ function App() {
             path="registration"
             element={
               authUser ? (
-                <Navigate to="/profile" replace />
+                <Navigate to="profile" replace />
               ) : (
                 <AccountPage
                   initialMode="registration"
@@ -84,6 +89,7 @@ function App() {
             }
           />
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="activate/:token" element={<ActivationPage />} />
         </Route>
       </Routes>
     </div>
