@@ -1,8 +1,8 @@
 import { useState } from 'react';
-
 import './Form.css';
 import { AuthUser, AuthResponse, RegistrationResponse } from '../../types/auth';
 import { client } from '../../utils/client';
+import { NavLink } from 'react-router-dom';
 
 type LoginMode = 'login' | 'registration';
 
@@ -241,6 +241,10 @@ export const Form = ({ initialMode = 'login', onLoginSuccess }: Props) => {
           ? "Don't have an account? Sign up"
           : 'Already have an account? Log in'}
       </button>
+
+      <NavLink className="auth-form__toggle" to={'/password-reset/request'}>
+        Forget password
+      </NavLink>
     </section>
   );
 };

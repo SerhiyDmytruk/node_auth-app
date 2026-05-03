@@ -9,6 +9,7 @@ import { loginRouter } from './routes/loginRoute.js';
 import { logoutRouter } from './routes/logoutRoute.js';
 import { meRouter } from './routes/meRoute.js';
 import { profileRouter } from './routes/profileRoute.js';
+import { passwordResetRouter } from './routes/passwordResetRoute.js';
 
 export const app = express();
 
@@ -27,3 +28,4 @@ app.use(loginRouter);
 app.use(logoutRouter);
 app.use(meRouter);
 app.use(profileRouter);
+app.use(passwordResetRouter);

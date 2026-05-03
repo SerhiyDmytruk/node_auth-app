@@ -9,6 +9,12 @@ const buildActivationUrl = (activationToken: string) => {
   return `${baseUrl}/activate/${activationToken}`;
 };
 
+const buildPasswordResetUrl = (passwordResetToken: string) => {
+  const baseUrl = (process.env.CLIENT_URL || CLIENT_URL).replace(/\/+$/, '');
+
+  return `${baseUrl}/password-reset/confirm/${passwordResetToken}`;
+};
+
 const canUseSmtp = () => {
   return Boolean(
     process.env.SMTP_HOST &&
@@ -78,5 +84,37 @@ export const sendEmailChangeNotification = async (
     subject: 'Your email was changed',
     text: `Your account email has been changed to ${newEmail}.`,
     html: `<p>Your account email has been changed to <strong>${newEmail}</strong>.</p>`,
+  });
+};
+
+export const sendPasswordResetEmail = async (
+  email: string,
+  passwordResetToken: string,
+): Promise<void> => {
+  const passResetUrl = buildPasswordResetUrl(passwordResetToken);
+
+  if (!canUseSmtp()) {
+    // eslint-disable-next-line no-console
+    console.log(`Password reset link for ${email}: ${passResetUrl}`);
+
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to: email,
+    subject: 'Your password change link',
+    text: `Change your password: ${passResetUrl}`,
+    html: `<p>Go to confirm password change page:</p><p><a href="${passResetUrl}">${passResetUrl}</a></p>`,
   });
 };

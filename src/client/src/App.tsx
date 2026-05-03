@@ -9,6 +9,9 @@ import { AccountPage } from './modules/AccountPage';
 import { AuthResponse, AuthUser } from './types/auth';
 import { client } from './utils/client';
 import { ActivationPage } from './modules/ActivationPage';
+import { PasswordForgot } from './modules/PasswordForgot';
+import { PasswordReset } from './modules/PasswordReset';
+import { PasswordSuccess } from './modules/PasswordSuccess';
 
 function App() {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
@@ -95,6 +98,14 @@ function App() {
           />
           <Route path="*" element={<NotFoundPage />} />
           <Route path="activate/:token" element={<ActivationPage />} />
+
+          <Route path="password-reset/request" element={<PasswordForgot />} />
+          <Route
+            path="password-reset/confirm/:token"
+            element={<PasswordReset />}
+          />
+
+          <Route path="password-reset/success" element={<PasswordSuccess />} />
         </Route>
       </Routes>
     </div>
